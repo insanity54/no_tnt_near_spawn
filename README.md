@@ -1,7 +1,6 @@
 # no_tnt_near_spawn
 
-[ContentDB](https://content.minetest.net/packages/cj_clippy/no_tnt_near_spawn/)
-[GitHub](https://github.com/insanity54/no_tnt_near_spawn)
+[![ContentDB](https://content.minetest.net/packages/cj_clippy/no_tnt_near_spawn/shields/title/)](https://content.minetest.net/packages/cj_clippy/no_tnt_near_spawn/)
 
 ## Features
 

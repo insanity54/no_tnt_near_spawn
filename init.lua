@@ -58,35 +58,34 @@ end
 
 
 -- Override lava bucket item
-if not core.settings:get_bool("allow_lava") then
-	local lava_bucket_def = minetest.registered_craftitems["bucket:bucket_lava"]
+local lava_bucket_def = minetest.registered_craftitems["bucket:bucket_lava"]
 
-	if lava_bucket_def then
+if lava_bucket_def then
     local original_on_place = lava_bucket_def.on_place
 
 
     local overridden_on_place = function(itemstack, placer, pointed_thing)
 
+      minetest.log("action", string.format("LAVA PLACED!!!!!!!!!!!!!!!!"))
 
       -- Check if the placer is allowed to place lava
       local pos = placer:get_pos()
       local distance_to_spawn = math.floor(vector.distance(pos, spawnpoint))
 
       if distance_to_spawn < spawn_buffer_distance and not core.settings:get_bool("allow_lava") then
+          -- minetest.chat_send_player(placer:get_player_name(), minetest.colorize("#ffa500", "Lava is not allowed within "..spawn_buffer_distance.." meters of spawn."))
           minetest.chat_send_player(placer:get_player_name(), minetest.colorize("#ffa500", "No lava within "..spawn_buffer_distance.." meters of spawn. (You are only "..distance_to_spawn.." meters.)"))
           return itemstack
       end
 
       -- Call the original on_use function
-    	minetest.log("action", string.format("LAVA PLACED by "..placer:get_player_name().." at "..pos:to_string()))
       return original_on_place(itemstack, placer, pointed_thing)
     end
 
     -- Override the lava bucket item
     minetest.override_item("bucket:bucket_lava", {
-	    on_place = overridden_on_place
-	  })
-	end
+      on_place = overridden_on_place
+    })
 end
 
 

@@ -1,0 +1,13 @@
+{
+    "title": "No TNT Near Spawn",
+    "tags": ["World Maintenance and Tools"],
+    "license": "Unlicense",
+    "media_license": "Unlicense",
+    "website": null,
+    "long_description": "## Features\n\n* Removes TNT nodes placed within a configurable distance from spawn.\n* Configurable no TNT zone size using the setting `spawn_buffer_distance` in minetest config. (Default 1000)\n* Notifies the player of chat when attempting to place TNT\n* Uses `static_spawnpoint` as the centerpoint of the no TNT zone, falling back to `0, 0, 0` if not set.\n\n\n## Motivation \n\nI wanted to enable TNT in my public multiplayer world, but I was sure that griefers would misuse it and blow holes in the cool scenery, farms, and buildings that all the players have worked hard to create. I still wanted to have fun with TNT, but in a designated area. So I made this mod, which prevents players from placing TNT nodes within a configurable distance from spawn.",
+    "name": "no_tnt_near_spawn",
+    "dev_state": "WIP",
+    "repo": "https://github.com/insanity54/no_tnt_near_spawn",
+    "issue_tracker": "https://github.com/insanity54/no_tnt_near_spawn/issues",
+    "forums": null
+}

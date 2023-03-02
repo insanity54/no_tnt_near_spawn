@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 spawn_buffer_distance (Disallow placing restricted nodes within this many meters of the spawn point. Set to 0 to disable) int 1000
 
 # Allow/disallow various node types within a certain distance from the spawn point
 allow_fire (Allow fire within buffer zone) bool false
 allow_tnt (Allow TNT within buffer zone) bool false
 allow_lava (Allow lava within buffer zonee) bool true
+=======
+# The number showing the minimum distance to spawn which TNT can be placed
+spawn_buffer_distance (TNT cannot be created within this distance to spawn) int 1000
+>>>>>>> 48a7368b3e1c64ff59aa983f8656f96fafd24aea

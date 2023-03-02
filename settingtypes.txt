@@ -1,0 +1,6 @@
+spawn_buffer_distance (Disallow placing restricted nodes within this many meters of the spawn point. Set to 0 to disable) int 1000
+
+# Allow/disallow various node types within a certain distance from the spawn point
+allow_fire (Allow fire within buffer zone) bool false
+allow_tnt (Allow TNT within buffer zone) bool false
+allow_lava (Allow lava within buffer zonee) bool true

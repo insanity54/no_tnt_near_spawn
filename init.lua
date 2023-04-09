@@ -14,6 +14,7 @@ local disallowed_nodes = {
 	["fire:basic_flame"] = not core.settings:get_bool("allow_fire"),
 	["fire:permanent_flame"] = not core.settings:get_bool("allow_fire"),
 	["fire:flint_and_steel"] = not core.settings:get_bool("allow_fire"),
+  ["ethereal:fire_flower"] = not core.settings:get_bool("allow_fire"),
 	["tnt:tnt"] = not core.settings:get_bool("allow_tnt"),
 	["default:lava_source"] = not core.settings:get_bool("allow_lava"),
 	["default:lava_flowing"] = not core.settings:get_bool("allow_lava"),

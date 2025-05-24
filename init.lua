@@ -18,6 +18,7 @@ local disallowed_nodes = {
 	["tnt:tnt"] = not core.settings:get_bool("allow_tnt"),
 	["default:lava_source"] = not core.settings:get_bool("allow_lava"),
 	["default:lava_flowing"] = not core.settings:get_bool("allow_lava"),
+	["rangedweapons:barrel"] = not core.settings:get_bool("allow_tnt"),
 }
 
 -- Debug: log the disallowed nodes table

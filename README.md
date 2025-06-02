@@ -4,12 +4,31 @@
 
 ## Features
 
-* Removes TNT nodes placed within a configurable distance from spawn.
-* Configurable no TNT zone size using the setting `spawn_buffer_distance` in minetest config. (Default 1000)
-* Notifies the player of chat when attempting to place TNT
-* Uses `static_spawnpoint` as the centerpoint of the no TNT zone, falling back to `0, 0, 0` if not set.
-
+* Removes TNT nodes (and other griefer favorites) placed within a configurable *horizontal* distance from spawn.
+* Configurable no TNT zone size using the setting `spawn_buffer_distance` in minetest config. (Default 300)
+* Notifies the player via chat when attempting to place TNT in a protected zone.
+* Configurable list of `protected_spawnpoints`. Add as few or as many as you like.
+* Defaults to `static_spawnpoint` as the centerpoint of the no TNT zone, falling back to `0, 0, 0` if not set.
 
 ## Motivation 
 
-I wanted to enable TNT in my public multiplayer world, but I was sure that griefers would misuse it and blow holes in the cool scenery, farms, and buildings that all the players have worked hard to create. I still wanted to have fun with TNT, but in a designated area. So I made this mod, which prevents players from placing TNT nodes within a configurable distance from spawn.
+I run an anarchy pvp server and griefers love to obliterate the spawnpoint with TNT, lava, or whatever dangerous node they can find. It makes the server inaccessible to new players and I really want new combatents on my server! So I made this mod, which prevents players from placing TNT, lava, and fire within a configurable horizontal distance from spawn.
+
+
+## Example usage
+
+### world.mt
+
+```txt
+load_mod_no_tnt_near_spawn = true
+```
+
+### minetest.conf
+
+```txt
+protected_spawnpoints = 0,125,0 ; 1000,5,200 ; -300,2,-400
+spawn_buffer_distance = 100
+allow_lava = false
+allow_fire = false
+allow_tnt = false
+```

@@ -1,110 +1,106 @@
+-- Read spawnpoints from config
+local raw_spawnpoints = core.settings:get("protected_spawnpoints")
+local spawnpoints = {}
 
--- Get the spawnpoint pos
-local spawnpoint = core.setting_get_pos("static_spawnpoint")
-if not spawnpoint then
-	spawnpoint = core.string_to_pos("0, 0, 0")
-end
-
-
--- Allow nodes within this distance from spawn
-local spawn_buffer_distance = tonumber(core.settings:get("spawn_buffer_distance")) or 1000
-
--- Disallowed node types
-local disallowed_nodes = {
-	["fire:basic_flame"] = not core.settings:get_bool("allow_fire"),
-	["fire:permanent_flame"] = not core.settings:get_bool("allow_fire"),
-	["fire:flint_and_steel"] = not core.settings:get_bool("allow_fire"),
-  ["ethereal:fire_flower"] = not core.settings:get_bool("allow_fire"),
-	["tnt:tnt"] = not core.settings:get_bool("allow_tnt"),
-	["default:lava_source"] = not core.settings:get_bool("allow_lava"),
-	["default:lava_flowing"] = not core.settings:get_bool("allow_lava"),
-	["rangedweapons:barrel"] = not core.settings:get_bool("allow_tnt"),
-}
-
--- Debug: log the disallowed nodes table
-minetest.log("action", "[No TNT Near Spawn] disallowed nodes:")
-for node_name, is_disallowed in pairs(disallowed_nodes) do
-  minetest.log("action", string.format("[No TNT Near Spawn] - %s: %s", node_name, tostring(is_disallowed)))
-end
-
-
--- Override flint and steel item
-if not core.settings:get_bool("allow_fire") then
-	local flint_and_steel_def = minetest.registered_tools["fire:flint_and_steel"]
-
-	if flint_and_steel_def then
-    local original_on_use = flint_and_steel_def.on_use
-
-    local overridden_on_use = function(itemstack, user, pointed_thing)
-
-        -- Check if the user is allowed to place fire
-        local pos = user:get_pos()
-        local distance_to_spawn = math.floor(vector.distance(pos, spawnpoint))
-
-        if distance_to_spawn < spawn_buffer_distance and not core.settings:get_bool("allow_fire") then
-            minetest.chat_send_player(user:get_player_name(), minetest.colorize("#ffa500", "No fire within "..spawn_buffer_distance.." meters of spawn. (You are only "..distance_to_spawn.." meters.)"))
-            return itemstack
-        end
-
-        -- Call the original on_use function
-        return original_on_use(itemstack, user, pointed_thing)
-    end
-
-    -- Override the flint and steel item
-    minetest.override_item("fire:flint_and_steel", {
-        on_use = overridden_on_use
-    })
+-- Helper: parse a string into a vector
+local function parse_pos(str)
+	local x, y, z = str:match("^%s*(-?%d+%.?%d*),%s*(-?%d+%.?%d*),%s*(-?%d+%.?%d*)%s*$")
+	if x and y and z then
+		return { x = tonumber(x), y = tonumber(y), z = tonumber(z) }
 	end
 end
 
-
-
--- Override lava bucket item
-local lava_bucket_def = minetest.registered_craftitems["bucket:bucket_lava"]
-
-if lava_bucket_def then
-    local original_on_place = lava_bucket_def.on_place
-
-
-    local overridden_on_place = function(itemstack, placer, pointed_thing)
-
-      minetest.log("action", string.format("LAVA PLACED!!!!!!!!!!!!!!!!"))
-
-      -- Check if the placer is allowed to place lava
-      local pos = placer:get_pos()
-      local distance_to_spawn = math.floor(vector.distance(pos, spawnpoint))
-
-      if distance_to_spawn < spawn_buffer_distance and not core.settings:get_bool("allow_lava") then
-          -- minetest.chat_send_player(placer:get_player_name(), minetest.colorize("#ffa500", "Lava is not allowed within "..spawn_buffer_distance.." meters of spawn."))
-          minetest.chat_send_player(placer:get_player_name(), minetest.colorize("#ffa500", "No lava within "..spawn_buffer_distance.." meters of spawn. (You are only "..distance_to_spawn.." meters.)"))
-          return itemstack
-      end
-
-      -- Call the original on_use function
-      return original_on_place(itemstack, placer, pointed_thing)
-    end
-
-    -- Override the lava bucket item
-    minetest.override_item("bucket:bucket_lava", {
-      on_place = overridden_on_place
-    })
+-- Parse multiple spawnpoints from config
+if raw_spawnpoints then
+	for entry in raw_spawnpoints:gmatch("[^;]+") do
+		local pos = parse_pos(entry)
+		if pos then table.insert(spawnpoints, pos) end
+	end
 end
 
+-- Fallback to static_spawnpoint or (0,0,0)
+if #spawnpoints == 0 then
+	local fallback = core.setting_get_pos("static_spawnpoint") or core.string_to_pos("0,0,0")
+	table.insert(spawnpoints, fallback)
+end
 
-minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
-	local node_name = newnode.name
+-- Settings
+local spawn_buffer_distance = tonumber(core.settings:get("spawn_buffer_distance")) or 300
+local allow_lava = core.settings:get_bool("allow_lava")
+local allow_fire = core.settings:get_bool("allow_fire")
+local allow_tnt = core.settings:get_bool("allow_tnt")
 
-	if disallowed_nodes[node_name] then
+-- Disallowed nodes
+local disallowed_nodes = {
+	["fire:basic_flame"] = not allow_fire,
+	["fire:permanent_flame"] = not allow_fire,
+	["fire:flint_and_steel"] = not allow_fire,
+	["ethereal:fire_flower"] = not allow_fire,
+	["tnt:tnt"] = not allow_tnt,
+	["default:lava_source"] = not allow_lava,
+	["default:lava_flowing"] = not allow_lava,
+	["rangedweapons:barrel"] = not allow_tnt,
+}
 
-		local player_name = placer:get_player_name()
+-- Calculate shortest horizontal distance to any spawnpoint
+local function closest_distance(pos)
+	local shortest = math.huge
+	for _, sp in ipairs(spawnpoints) do
+		local dx, dz = pos.x - sp.x, pos.z - sp.z
+		local dist = math.sqrt(dx * dx + dz * dz)
+		if dist < shortest then shortest = dist end
+	end
+	return math.floor(shortest)
+end
 
-		-- delete the node if it's too close to spawn
-		local distance_to_spawn = math.floor(vector.distance(pos, spawnpoint))
+-- Lava bucket override
+if not allow_lava then
+	local def = minetest.registered_craftitems["bucket:bucket_lava"]
+	if def then
+		local original = def.on_place
+		minetest.override_item("bucket:bucket_lava", {
+			on_place = function(itemstack, placer, pointed_thing)
+				local pos = pointed_thing.above or placer:get_pos()
+				local dist = closest_distance(pos)
+				if dist < spawn_buffer_distance then
+					minetest.chat_send_player(placer:get_player_name(),
+						minetest.colorize("#ffa500", "No lava within "..spawn_buffer_distance.." meters of spawn. (You are only "..dist.." meters.)"))
+					return itemstack
+				end
+				return original(itemstack, placer, pointed_thing)
+			end
+		})
+	end
+end
 
-		if distance_to_spawn < spawn_buffer_distance then
-			local message = "That block is not allowed within "..spawn_buffer_distance.." meters of spawn. (You are only "..distance_to_spawn.." meters.)"
-			minetest.chat_send_player(player_name, minetest.colorize("#ffa500", message))
+-- Flint and steel override
+if not allow_fire then
+	local def = minetest.registered_tools["fire:flint_and_steel"]
+	if def then
+		local original = def.on_use
+		minetest.override_item("fire:flint_and_steel", {
+			on_use = function(itemstack, user, pointed_thing)
+				local pos = pointed_thing.above or user:get_pos()
+				local dist = closest_distance(pos)
+				if dist < spawn_buffer_distance then
+					minetest.chat_send_player(user:get_player_name(),
+						minetest.colorize("#ffa500", "No fire within "..spawn_buffer_distance.." meters of spawn. (You are only "..dist.." meters.)"))
+					return itemstack
+				end
+				return original(itemstack, user, pointed_thing)
+			end
+		})
+	end
+end
+
+-- Global placement guard
+minetest.register_on_placenode(function(pos, newnode, placer)
+	if disallowed_nodes[newnode.name] then
+		local dist = closest_distance(pos)
+		if dist < spawn_buffer_distance then
 			minetest.remove_node(pos)
+			minetest.chat_send_player(placer:get_player_name(),
+				minetest.colorize("#ffa500", "That block is not allowed within "..spawn_buffer_distance.." meters of spawn. (You are only "..dist.." meters.)"))
 			return true
 		end
 	end

@@ -1,6 +1,14 @@
-spawn_buffer_distance (Disallow placing restricted nodes within this many meters of the spawn point. Set to 0 to disable) int 1000
+# List of protected spawnpoints, separated by semicolons (e.g., "0,125,1.5; 50,120,-30")
+protected_spawnpoints	(Protected spawnpoints)	string	""
 
-# Allow/disallow various node types within a certain distance from the spawn point
-allow_fire (Allow fire within buffer zone) bool false
-allow_tnt (Allow TNT within buffer zone) bool false
-allow_lava (Allow lava within buffer zonee) bool false
+# Horizontal distance in meters within which configured Nodes are blocked
+spawn_buffer_distance	(Buffer distance from spawnpoints)	int	100
+
+# Allow placing lava within protected zone
+allow_lava	(Allow lava near spawnpoints)	bool	false
+
+# Allow placing fire within protected zone
+allow_fire	(Allow fire near spawnpoints)	bool	false
+
+# Allow placing TNT within protected zone
+allow_tnt	(Allow TNT near spawnpoints)	bool	false
